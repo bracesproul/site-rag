@@ -1,18 +1,63 @@
 import { createSupabaseClient } from "@/lib/supabase";
+import { Model } from "@/types";
 import { ThreadMessage } from "@assistant-ui/react";
-import { ChatAnthropic } from "@langchain/anthropic";
 import {
   SupabaseFilter,
   SupabaseVectorStore,
 } from "@langchain/community/vectorstores/supabase";
 import { BaseMessageLike } from "@langchain/core/messages";
 import { OpenAIEmbeddings } from "@langchain/openai";
+import { initChatModel } from "langchain/chat_models/universal";
 
 interface QueryModelInput {
   messages: ThreadMessage[];
   abortSignal: AbortSignal;
   currentUrl: string;
   queryMode: "page" | "site";
+  model: Model;
+}
+
+const modelNameToProviderMap: Record<Model, string> = {
+  "gpt-4o": "openai",
+  "gpt-4o-mini": "openai",
+  "o1-preview": "openai",
+  "o1-mini": "openai",
+  "claude-3-5-haiku-latest": "anthropic",
+  "claude-3-5-sonnet-latest": "anthropic",
+  "claude-3-opus-latest": "anthropic",
+  "gemini-1.5-flash": "google-genai",
+  "google-1.5-pro": "google-genai",
+  "gemini-2.0-flash-exp": "google-genai",
+};
+
+async function getModelClass(model: Model) {
+  const provider = modelNameToProviderMap[model];
+  if (!provider) {
+    throw new Error(`Unknown model: ${model}`);
+  }
+  const { anthropicApiKey, openaiApiKey, googleGenAIApiKey } =
+    await chrome.storage.sync.get([
+      "anthropicApiKey",
+      "openaiApiKey",
+      "googleGenAIApiKey",
+    ]);
+  let apiKey = "";
+  if (provider === "anthropic") {
+    apiKey = anthropicApiKey;
+  } else if (provider === "openai") {
+    apiKey = openaiApiKey;
+  } else if (provider === "google-genai") {
+    apiKey = googleGenAIApiKey;
+  }
+
+  console.log("Using provider", provider);
+  console.log("Using model", model);
+  console.log("Using API key", apiKey);
+  return initChatModel(model, {
+    modelProvider: provider,
+    temperature: 0,
+    apiKey,
+  });
 }
 
 const SYSTEM_MESSAGE = `You are a helpful research assistant whose task is to answer the user's question.
@@ -34,28 +79,17 @@ export async function queryModel({
   abortSignal,
   currentUrl,
   queryMode = "page",
+  model: modelName,
 }: QueryModelInput) {
   if (!currentUrl) {
     throw new Error("No active tab");
   }
-  const {
-    anthropicApiKey,
-    anthropicModel,
-    openaiEmbeddingsModel,
-    openaiApiKey,
-    maxContextDocuments,
-  } = await chrome.storage.sync.get([
-    "anthropicApiKey",
-    "anthropicModel",
-    "maxContextTokens",
-    "openaiEmbeddingsModel",
-    "openaiApiKey",
-    "maxContextDocuments",
-  ]);
-
-  if (!anthropicApiKey) {
-    throw new Error("No API key found for Anthropic");
-  }
+  const { openaiEmbeddingsModel, openaiApiKey, maxContextDocuments } =
+    await chrome.storage.sync.get([
+      "openaiEmbeddingsModel",
+      "openaiApiKey",
+      "maxContextDocuments",
+    ]);
 
   const embeddings = new OpenAIEmbeddings({
     model: openaiEmbeddingsModel || "text-embedding-3-large",
@@ -68,10 +102,7 @@ export async function queryModel({
     queryName: "match_documents",
   });
 
-  const model = new ChatAnthropic({
-    model: anthropicModel || "claude-3-5-sonnet-latest",
-    apiKey: anthropicApiKey,
-  });
+  const model = await getModelClass(modelName);
 
   const recentContent = messages[messages.length - 1].content[0];
   if (recentContent.type !== "text") {

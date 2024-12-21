@@ -5,11 +5,14 @@ import Index from "./components/Index";
 import { Button } from "./components/ui/button";
 import { RuntimeProvider } from "./runtimes/assistant-ui";
 import ChatView from "./components/ChatView";
+import { Model } from "./types";
+import ModelSelect from "./components/ModelSelect";
 
 const App: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [currentUrl, setCurrentUrl] = useState<string>("");
   const [queryMode, setQueryMode] = useState<"page" | "site">("site");
+  const [model, setModel] = useState<Model>("gpt-4o");
 
   useEffect(() => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
@@ -23,15 +26,18 @@ const App: React.FC = () => {
   };
 
   return (
-    <RuntimeProvider queryMode={queryMode}>
-      <div className="w-[600px] h-[600px] p-4 bg-white">
+    <RuntimeProvider queryMode={queryMode} model={model}>
+      <div className="w-[600px] h-[600px] rounded-3xl p-4 bg-white">
         <div className="flex items-center justify-between mb-4">
           <p className="text-2xl font-semibold text-black tracking-tighter">
             Site<span className="font-extrabold text-red-600">RAG</span>
           </p>
-          <Button variant="ghost" onClick={toggleSettings}>
-            <Settings size={24} />
-          </Button>
+          <div className="flex items-center gap-2">
+            <ModelSelect model={model} setModel={setModel} />
+            <Button variant="ghost" onClick={toggleSettings}>
+              <Settings size={24} />
+            </Button>
+          </div>
         </div>
 
         <div className="mb-3">

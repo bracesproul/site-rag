@@ -5,6 +5,7 @@ import {
   type ChatModelAdapter,
 } from "@assistant-ui/react";
 import { queryModel } from "@/graphs/query";
+import { Model } from "@/types";
 
 const ModelAdapter = (args: Record<string, any>): ChatModelAdapter => {
   return {
@@ -14,6 +15,7 @@ const ModelAdapter = (args: Record<string, any>): ChatModelAdapter => {
         abortSignal,
         currentUrl: args.currentUrl,
         queryMode: args.queryMode,
+        model: args.model,
       });
 
       let text = "";
@@ -31,9 +33,11 @@ const ModelAdapter = (args: Record<string, any>): ChatModelAdapter => {
 export function RuntimeProvider({
   children,
   queryMode,
+  model,
 }: Readonly<{
   children: ReactNode;
   queryMode: "page" | "site";
+  model: Model;
 }>) {
   const [currentUrl, setCurrentUrl] = useState<string>("");
 
@@ -44,7 +48,9 @@ export function RuntimeProvider({
     });
   }, []);
 
-  const runtime = useLocalRuntime(ModelAdapter({ currentUrl, queryMode }));
+  const runtime = useLocalRuntime(
+    ModelAdapter({ currentUrl, queryMode, model }),
+  );
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>

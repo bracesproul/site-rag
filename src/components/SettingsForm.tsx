@@ -10,30 +10,28 @@ interface SettingsFormProps {
 interface Settings {
   fireCrawlApiKey: string;
   anthropicApiKey: string;
-  anthropicModel: string;
   openaiApiKey: string;
   openaiEmbeddingsModel: string;
   maxChunkSize: number;
   chunkOverlap: number;
-  maxContextTokens: number;
   maxContextDocuments: number;
   supabaseUrl: string;
   supabasePrivateKey: string;
+  googleGenAIApiKey: string;
 }
 
 const SettingsForm: React.FC<SettingsFormProps> = ({ onClose }) => {
   const [settings, setSettings] = useState<Settings>({
     fireCrawlApiKey: "",
     anthropicApiKey: "",
-    anthropicModel: "claude-3-5-sonnet-latest",
     openaiApiKey: "",
     openaiEmbeddingsModel: "text-embedding-3-large",
     maxChunkSize: 250,
     chunkOverlap: 150,
-    maxContextTokens: 10000,
     supabaseUrl: "",
     supabasePrivateKey: "",
     maxContextDocuments: 100,
+    googleGenAIApiKey: "",
   });
 
   useEffect(() => {
@@ -42,30 +40,28 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ onClose }) => {
       [
         "fireCrawlApiKey",
         "anthropicApiKey",
-        "anthropicModel",
         "openaiApiKey",
         "openaiEmbeddingsModel",
         "maxChunkSize",
         "chunkOverlap",
-        "maxContextTokens",
         "supabaseUrl",
         "supabasePrivateKey",
         "maxContextDocuments",
+        "googleGenAIApiKey",
       ],
       (result) => {
         setSettings({
           fireCrawlApiKey: result.fireCrawlApiKey || "",
           anthropicApiKey: result.anthropicApiKey || "",
-          anthropicModel: result.anthropicModel || "claude-3-5-sonnet-latest",
           openaiApiKey: result.openaiApiKey || "",
           openaiEmbeddingsModel:
             result.openaiEmbeddingsModel || "text-embedding-3-large",
           maxChunkSize: result.maxChunkSize || 250,
           chunkOverlap: result.chunkOverlap || 150,
-          maxContextTokens: result.maxContextTokens || 10000,
           supabaseUrl: result.supabaseUrl || "",
           supabasePrivateKey: result.supabasePrivateKey || "",
           maxContextDocuments: result.maxContextDocuments || 100,
+          googleGenAIApiKey: result.googleGenAIApiKey || "",
         });
       },
     );
@@ -82,12 +78,9 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ onClose }) => {
     const { name, value } = e.target;
     setSettings((prev) => ({
       ...prev,
-      [name]: [
-        "maxChunkSize",
-        "chunkOverlap",
-        "maxContextTokens",
-        "maxContextDocuments",
-      ].includes(name)
+      [name]: ["maxChunkSize", "chunkOverlap", "maxContextDocuments"].includes(
+        name,
+      )
         ? parseInt(value)
         : value,
     }));
@@ -95,30 +88,6 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ onClose }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="flex justify-between w-full gap-2">
-        <div className="w-full">
-          <Label>Anthropic API Key</Label>
-          <Input
-            type="text"
-            name="anthropicApiKey"
-            value={settings.anthropicApiKey}
-            onChange={handleChange}
-            className="w-full"
-          />
-        </div>
-
-        <div className="w-full">
-          <Label>Anthropic Model Name</Label>
-          <Input
-            type="text"
-            name="anthropicModel"
-            value={settings.anthropicModel}
-            onChange={handleChange}
-            className="w-full"
-          />
-        </div>
-      </div>
-
       <div className="flex justify-between w-full gap-2">
         <div className="w-full">
           <Label>OpenAI API Key</Label>
@@ -137,6 +106,30 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ onClose }) => {
             type="text"
             name="openaiEmbeddingsModel"
             value={settings.openaiEmbeddingsModel}
+            onChange={handleChange}
+            className="w-full"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-between w-full gap-2">
+        <div className="w-full">
+          <Label>Google GenAI API Key</Label>
+          <Input
+            type="text"
+            name="googleGenAIApiKey"
+            value={settings.googleGenAIApiKey}
+            onChange={handleChange}
+            className="w-full"
+          />
+        </div>
+
+        <div className="w-full">
+          <Label>Anthropic API Key</Label>
+          <Input
+            type="text"
+            name="anthropicApiKey"
+            value={settings.anthropicApiKey}
             onChange={handleChange}
             className="w-full"
           />
@@ -199,15 +192,6 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ onClose }) => {
         />
       </div>
 
-      {/* <div>
-        <Label>Max Context Tokens</Label>
-        <Input
-          type="number"
-          name="maxContextTokens"
-          value={settings.maxContextTokens}
-          onChange={handleChange}
-        />
-      </div> */}
       <div>
         <Label>Max Context Documents</Label>
         <Input
