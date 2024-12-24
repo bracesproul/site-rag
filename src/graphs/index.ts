@@ -10,19 +10,13 @@ interface IndexDataInput {
 }
 
 export async function indexData({ url, mode }: IndexDataInput): Promise<any> {
-  const {
-    fireCrawlApiKey,
-    openaiApiKey,
-    openaiEmbeddingsModel,
-    maxChunkSize,
-    maxChunkOverlap,
-  } = await chrome.storage.sync.get([
-    "fireCrawlApiKey",
-    "openaiApiKey",
-    "openaiEmbeddingsModel",
-    "maxChunkSize",
-    "maxChunkOverlap",
-  ]);
+  const { fireCrawlApiKey, openaiApiKey, maxChunkSize, maxChunkOverlap } =
+    await chrome.storage.sync.get([
+      "fireCrawlApiKey",
+      "openaiApiKey",
+      "maxChunkSize",
+      "maxChunkOverlap",
+    ]);
 
   if (!fireCrawlApiKey) {
     throw new Error("No API key found for FireCrawl");
@@ -32,7 +26,7 @@ export async function indexData({ url, mode }: IndexDataInput): Promise<any> {
   }
 
   const embeddings = new OpenAIEmbeddings({
-    model: openaiEmbeddingsModel || "text-embedding-3-large",
+    model: "text-embedding-3-large",
     apiKey: openaiApiKey,
   });
 

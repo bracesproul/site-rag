@@ -1,30 +1,25 @@
 import React from "react";
 import { Thread } from "./assistant-ui/thread";
-import { Switch } from "./ui/switch";
-import { Label } from "./ui/label";
 
 export default function ChatView({
   queryMode,
   setQueryMode,
+  retrievalMode,
+  setRetrievalMode,
 }: {
   queryMode: "page" | "site";
   setQueryMode: React.Dispatch<React.SetStateAction<"page" | "site">>;
+  retrievalMode: "base" | "multi";
+  setRetrievalMode: React.Dispatch<React.SetStateAction<"base" | "multi">>;
 }) {
   return (
-    <div className="w-full mt-auto overflow-y-auto">
-      <div className="flex items-center space-x-2">
-        <Switch
-          checked={queryMode === "site"}
-          onCheckedChange={(checked) => setQueryMode(checked ? "site" : "page")}
-          id="query-mode"
-        />
-        <Label htmlFor="query-mode">Query Site</Label>
-      </div>
-      <div className="text-muted-foreground w-2/3 text-pretty">
-        Filters indexed documents by base URL. If unchecked, will filter by
-        current page URL.
-      </div>
-      <Thread />
+    <div className="w-full mt-auto h-full max-h-[465px] overflow-y-auto">
+      <Thread
+        queryMode={queryMode}
+        setQueryMode={setQueryMode}
+        retrievalMode={retrievalMode}
+        setRetrievalMode={setRetrievalMode}
+      />
     </div>
   );
 }

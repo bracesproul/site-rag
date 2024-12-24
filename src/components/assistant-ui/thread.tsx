@@ -11,12 +11,31 @@ import { SendHorizontalIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
 import { MarkdownText } from "./markdown-text";
+import { Label } from "../ui/label";
+import { Switch } from "../ui/switch";
 
-export const Thread: FC = () => {
+interface ThreadProps {
+  queryMode: "page" | "site";
+  setQueryMode: React.Dispatch<React.SetStateAction<"page" | "site">>;
+  retrievalMode: "base" | "multi";
+  setRetrievalMode: React.Dispatch<React.SetStateAction<"base" | "multi">>;
+}
+
+export const Thread: FC<ThreadProps> = ({
+  queryMode,
+  setQueryMode,
+  retrievalMode,
+  setRetrievalMode,
+}) => {
   return (
     <ThreadPrimitive.Root className="bg-background h-full">
       <ThreadPrimitive.Viewport className="flex h-full flex-col items-center overflow-y-scroll scroll-smooth bg-inherit px-4 pt-8">
-        <ThreadWelcome />
+        <ThreadWelcome
+          queryMode={queryMode}
+          setQueryMode={setQueryMode}
+          retrievalMode={retrievalMode}
+          setRetrievalMode={setRetrievalMode}
+        />
 
         <ThreadPrimitive.Messages
           components={{
@@ -35,14 +54,37 @@ export const Thread: FC = () => {
   );
 };
 
-const ThreadWelcome: FC = () => {
+const ThreadWelcome: FC<ThreadProps> = ({ queryMode, setQueryMode, retrievalMode, setRetrievalMode }) => {
   return (
     <ThreadPrimitive.Empty>
-      <div className="flex flex-grow flex-col items-center justify-center">
-        <Avatar>
-          <AvatarFallback>C</AvatarFallback>
-        </Avatar>
-        <p className="mt-4 font-medium">How can I help you today?</p>
+      <div className="flex flex-grow gap-3 flex-col items-center justify-center">
+        <div className="flex items-center space-x-2">
+          <Switch
+            checked={queryMode === "site"}
+            onCheckedChange={(checked) =>
+              setQueryMode(checked ? "site" : "page")
+            }
+            id="query-mode"
+          />
+          <Label htmlFor="query-mode">Query Site</Label>
+        </div>
+        <p className="text-muted-foreground w-2/3 text-pretty">
+          Filters indexed documents by base URL. If unchecked, will filter by
+          current page URL.
+        </p>
+        <div className="flex items-center space-x-2">
+          <Switch
+            checked={retrievalMode === "multi"}
+            onCheckedChange={(checked) =>
+              setRetrievalMode(checked ? "multi" : "base")
+            }
+            id="retrieval-mode"
+          />
+          <Label htmlFor="retrieval-mode">Multi-query mode</Label>
+        </div>
+        <p className="text-muted-foreground w-2/3 text-pretty">
+          Multi-query mode will generate multiple queries similar to your input to be used for semantic search.
+        </p>
       </div>
     </ThreadPrimitive.Empty>
   );
